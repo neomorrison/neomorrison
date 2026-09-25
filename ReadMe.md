@@ -5,3 +5,5 @@
 [![GitHub Stats](https://github-stats-extended.vercel.app/api?username=neomorrison&show_icons=true&include_all_commits=true&theme=swift)](https://github-stats-extended.vercel.app/api?username=neomorrison&show_icons=true&include_all_commits=true&theme=swift)
 
 “I’m the one who knocks.”
+
+Play my vibecoded games here: https://neyo.games
