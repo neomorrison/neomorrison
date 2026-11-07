@@ -1,0 +1,50 @@
+name: LOC ticker
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loc-ticker
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # per-repo clones + scan results; kept out of git because it holds private repo names
+      - uses: actions/cache@v4
+        with:
+          path: .loc-cache
+          key: loc-cache-${{ github.run_id }}
+          restore-keys: loc-cache-
+
+      - name: Collect and render
+        env:
+          GH_TOKEN: ${{ secrets.LOC_TOKEN }}
+          GH_OWNER: ${{ github.repository_owner }}
+          LOC_EXCLUDE: ${{ secrets.LOC_EXCLUDE }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Add a LOC_TOKEN secret (fine-grained PAT, all repos, Contents: read) to update the ticker."
+            exit 0
+          fi
+          python scripts/loc_ticker.py all
+
+      - name: Commit
+        run: |
+          git config user.name "loc-ticker[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/loc-ticker-*.svg data/loc-history.json
+          git diff --cached --quiet || git commit -m "chore: update LOC ticker"
+          git push
